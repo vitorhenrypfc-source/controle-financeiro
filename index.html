@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Controle Financeiro</title>
+</head>
+
+<body>
+
+  <!-- HTML -->
+  <div class="container">
+    <h1>💰 Controle Financeiro</h1>
+    <h2 id="saldo">R$ 0,00</h2>
+
+    <div class="tipo">
+      <label>
+        <input type="radio" name="selecao" value="entrada" onchange="mudarCor()">
+        Entrada
+      </label>
+      <label>
+        <input type="radio" name="selecao" value="saida" onchange="mudarCor()">
+        Saída
+      </label>
+    </div>
+
+    <input type="number" id="valor" placeholder="Digite o valor">
+
+    <button onclick="adicionarValor()">Confirmar</button>
+
+    <h3>📋 Histórico</h3>
+    <ul id="historico"></ul>
+  </div>
+
+  <!-- STYLE -->
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: Arial;
+      background: #f4f6f8;
+      transition: 0.3s;
+    }
+
+    body.entrada {
+      background: #d4edda;
+    }
+
+    body.saida {
+      background: #f8d7da;
+    }
+
+    .container {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      width: 90%;
+      max-width: 400px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      background: #2d89ef;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    li {
+      list-style: none;
+      padding: 8px;
+      margin: 5px 0;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .entrada-item {
+      background: #d4edda;
+    }
+
+    .saida-item {
+      background: #f8d7da;
+    }
+  </style>
+
+  <!-- SCRIPT -->
+  <script>
+    let saldo = parseFloat(localStorage.getItem("saldo")) || 0;
+    let transacoes = JSON.parse(localStorage.getItem("transacoes")) || [];
+
+    const saldoEl = document.getElementById("saldo");
+    const historicoEl = document.getElementById("historico");
+
+    function atualizarTela() {
+      saldoEl.innerText = "R$ " + saldo.toFixed(2);
+
+      historicoEl.innerHTML = "";
+
+      transacoes.forEach(t => {
+        const li = document.createElement("li");
+        li.classList.add(t.tipo === "entrada" ? "entrada-item" : "saida-item");
+
+        li.innerText = `${t.tipo === "entrada" ? "+" : "-"} R$ ${t.valor.toFixed(2)}`;
+
+        historicoEl.appendChild(li);
+      });
+    }
+
+    function mudarCor() {
+      const selecionado = document.querySelector('input[name="selecao"]:checked');
+
+      document.body.classList.remove("entrada", "saida");
+
+      if (!selecionado) return;
+
+      document.body.classList.add(selecionado.value);
+    }
+
+    function adicionarValor() {
+      const valorInput = document.getElementById("valor");
+      const valor = parseFloat(valorInput.value);
+      const selecionado = document.querySelector('input[name="selecao"]:checked');
+
+      if (!selecionado || isNaN(valor) || valor <= 0) {
+        alert("Preencha corretamente!");
+        return;
+      }
+
+      if (selecionado.value === "saida" && valor > saldo) {
+        alert("Saldo insuficiente!");
+        return;
+      }
+
+      if (selecionado.value === "entrada") {
+        saldo += valor;
+      } else {
+        saldo -= valor;
+      }
+
+      transacoes.push({
+        tipo: selecionado.value,
+        valor: valor
+      });
+
+      localStorage.setItem("saldo", saldo);
+      localStorage.setItem("transacoes", JSON.stringify(transacoes));
+
+      valorInput.value = "";
+
+      atualizarTela();
+    }
+
+    atualizarTela();
+  </script>
+
+</body>
+</html>
